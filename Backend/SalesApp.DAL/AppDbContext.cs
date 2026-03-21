@@ -1,0 +1,281 @@
+using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+
+using SalesApp.Domain.Entities;
+namespace SalesApp.DAL;
+
+public partial class AppDbContext : DbContext
+{
+    public AppDbContext()
+    {
+    }
+
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options)
+    {
+    }
+
+    public virtual DbSet<Cart> Carts { get; set; }
+
+    public virtual DbSet<CartItem> CartItems { get; set; }
+
+    public virtual DbSet<Category> Categories { get; set; }
+
+    public virtual DbSet<ChatMessage> ChatMessages { get; set; }
+
+    public virtual DbSet<Notification> Notifications { get; set; }
+
+    public virtual DbSet<Order> Orders { get; set; }
+
+    public virtual DbSet<Payment> Payments { get; set; }
+
+    public virtual DbSet<Product> Products { get; set; }
+
+    public virtual DbSet<StoreLocation> StoreLocations { get; set; }
+
+    public virtual DbSet<User> Users { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=sales_app_db;Username=postgres;Password=Trile160904##;");
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Cart>(entity =>
+        {
+            entity.HasKey(e => e.CartId).HasName("carts_pkey");
+
+            entity.ToTable("carts");
+
+            entity.Property(e => e.CartId).HasColumnName("cart_id");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .HasColumnName("status");
+            entity.Property(e => e.TotalPrice)
+                .HasPrecision(18, 2)
+                .HasColumnName("total_price");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Carts)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("carts_user_id_fkey");
+        });
+
+        modelBuilder.Entity<CartItem>(entity =>
+        {
+            entity.HasKey(e => e.CartItemId).HasName("cart_items_pkey");
+
+            entity.ToTable("cart_items");
+
+            entity.Property(e => e.CartItemId).HasColumnName("cart_item_id");
+            entity.Property(e => e.CartId).HasColumnName("cart_id");
+            entity.Property(e => e.Price)
+                .HasPrecision(18, 2)
+                .HasColumnName("price");
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+            entity.Property(e => e.Quantity).HasColumnName("quantity");
+
+            entity.HasOne(d => d.Cart).WithMany(p => p.CartItems)
+                .HasForeignKey(d => d.CartId)
+                .HasConstraintName("cart_items_cart_id_fkey");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.CartItems)
+                .HasForeignKey(d => d.ProductId)
+                .HasConstraintName("cart_items_product_id_fkey");
+        });
+
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.HasKey(e => e.CategoryId).HasName("categories_pkey");
+
+            entity.ToTable("categories");
+
+            entity.Property(e => e.CategoryId).HasColumnName("category_id");
+            entity.Property(e => e.CategoryName)
+                .HasMaxLength(100)
+                .HasColumnName("category_name");
+        });
+
+        modelBuilder.Entity<ChatMessage>(entity =>
+        {
+            entity.HasKey(e => e.ChatMessageId).HasName("chat_messages_pkey");
+
+            entity.ToTable("chat_messages");
+
+            entity.Property(e => e.ChatMessageId).HasColumnName("chat_message_id");
+            entity.Property(e => e.Message).HasColumnName("message");
+            entity.Property(e => e.SentAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("sent_at");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.ReceiverUserId).HasColumnName("receiver_user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.ChatMessages)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("chat_messages_user_id_fkey");
+
+            entity.HasOne(d => d.ReceiverUser).WithMany()
+                .HasForeignKey(d => d.ReceiverUserId)
+                .HasConstraintName("chat_messages_receiver_user_id_fkey");
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.NotificationId).HasName("notifications_pkey");
+
+            entity.ToTable("notifications");
+
+            entity.Property(e => e.NotificationId).HasColumnName("notification_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("created_at");
+            entity.Property(e => e.IsRead)
+                .HasDefaultValue(false)
+                .HasColumnName("is_read");
+            entity.Property(e => e.Message)
+                .HasMaxLength(255)
+                .HasColumnName("message");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Notifications)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("notifications_user_id_fkey");
+        });
+
+        modelBuilder.Entity<Order>(entity =>
+        {
+            entity.HasKey(e => e.OrderId).HasName("orders_pkey");
+
+            entity.ToTable("orders");
+
+            entity.Property(e => e.OrderId).HasColumnName("order_id");
+            entity.Property(e => e.BillingAddress)
+                .HasMaxLength(255)
+                .HasColumnName("billing_address");
+            entity.Property(e => e.CartId).HasColumnName("cart_id");
+            entity.Property(e => e.OrderDate)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("order_date");
+            entity.Property(e => e.OrderStatus)
+                .HasMaxLength(50)
+                .HasColumnName("order_status");
+            entity.Property(e => e.PaymentMethod)
+                .HasMaxLength(50)
+                .HasColumnName("payment_method");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.Cart).WithMany(p => p.Orders)
+                .HasForeignKey(d => d.CartId)
+                .HasConstraintName("orders_cart_id_fkey");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Orders)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("orders_user_id_fkey");
+        });
+
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.HasKey(e => e.PaymentId).HasName("payments_pkey");
+
+            entity.ToTable("payments");
+
+            entity.Property(e => e.PaymentId).HasColumnName("payment_id");
+            entity.Property(e => e.Amount)
+                .HasPrecision(18, 2)
+                .HasColumnName("amount");
+            entity.Property(e => e.OrderId).HasColumnName("order_id");
+            entity.Property(e => e.PaymentDate)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("payment_date");
+            entity.Property(e => e.PaymentStatus)
+                .HasMaxLength(50)
+                .HasColumnName("payment_status");
+
+            entity.HasOne(d => d.Order).WithMany(p => p.Payments)
+                .HasForeignKey(d => d.OrderId)
+                .HasConstraintName("payments_order_id_fkey");
+        });
+
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.HasKey(e => e.ProductId).HasName("products_pkey");
+
+            entity.ToTable("products");
+
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+            entity.Property(e => e.BriefDescription)
+                .HasMaxLength(255)
+                .HasColumnName("brief_description");
+            entity.Property(e => e.CategoryId).HasColumnName("category_id");
+            entity.Property(e => e.FullDescription).HasColumnName("full_description");
+            entity.Property(e => e.ImageUrl)
+                .HasMaxLength(255)
+                .HasColumnName("image_url");
+            entity.Property(e => e.Price)
+                .HasPrecision(18, 2)
+                .HasColumnName("price");
+            entity.Property(e => e.ProductName)
+                .HasMaxLength(100)
+                .HasColumnName("product_name");
+            entity.Property(e => e.TechnicalSpecifications).HasColumnName("technical_specifications");
+
+            entity.HasOne(d => d.Category).WithMany(p => p.Products)
+                .HasForeignKey(d => d.CategoryId)
+                .HasConstraintName("products_category_id_fkey");
+        });
+
+        modelBuilder.Entity<StoreLocation>(entity =>
+        {
+            entity.HasKey(e => e.LocationId).HasName("store_locations_pkey");
+
+            entity.ToTable("store_locations");
+
+            entity.Property(e => e.LocationId).HasColumnName("location_id");
+            entity.Property(e => e.Address)
+                .HasMaxLength(255)
+                .HasColumnName("address");
+            entity.Property(e => e.Latitude)
+                .HasPrecision(9, 6)
+                .HasColumnName("latitude");
+            entity.Property(e => e.Longitude)
+                .HasPrecision(9, 6)
+                .HasColumnName("longitude");
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.UserId).HasName("users_pkey");
+
+            entity.ToTable("users");
+
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.Address)
+                .HasMaxLength(255)
+                .HasColumnName("address");
+            entity.Property(e => e.Email)
+                .HasMaxLength(100)
+                .HasColumnName("email");
+            entity.Property(e => e.PasswordHash)
+                .HasMaxLength(255)
+                .HasColumnName("password_hash");
+            entity.Property(e => e.PhoneNumber)
+                .HasMaxLength(15)
+                .HasColumnName("phone_number");
+            entity.Property(e => e.Role)
+                .HasMaxLength(50)
+                .HasColumnName("role");
+            entity.Property(e => e.Username)
+                .HasMaxLength(50)
+                .HasColumnName("username");
+        });
+
+        OnModelCreatingPartial(modelBuilder);
+    }
+
+    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+}
