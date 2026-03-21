@@ -158,18 +158,30 @@ namespace SalesApp.BLL.Services
             }
         }
 
-        public async Task<BasicResponse> HandlePayosWebhookAsync(PayosWebhookRequest request, CancellationToken cancellationToken = default)
+        public async Task<BasicResponse> HandlePayosWebhookAsync(PayOS.Models.Webhooks.Webhook request, CancellationToken cancellationToken = default)
         {
             if (request == null || request.Data == null)
             {
                 return new BasicResponse(false, "Dữ liệu webhook PayOS là bắt buộc.");
             }
-            if (!_payosGateway.VerifyWebhookSignature(request, out var verifyMessage))
+
+            PayOS.Models.Webhooks.WebhookData webhookData;
+            try
             {
-                return new BasicResponse(false, verifyMessage);
+                var clientId = _configuration["PayOS:ClientId"];
+                var apiKey = _configuration["PayOS:ApiKey"];
+                var checksumKey = _configuration["PayOS:ChecksumKey"];
+                var payOsClient = new PayOSClient(clientId, apiKey, checksumKey);
+
+                // Verify the webhook using the official SDK calculation
+                webhookData = await payOsClient.Webhooks.VerifyAsync(request);
+            }
+            catch (Exception ex)
+            {
+                return new BasicResponse(false, $"Chữ ký PayOS không hợp lệ: {ex.Message}");
             }
 
-            var orderCode = request.Data.OrderCode;
+            var orderCode = webhookData.OrderCode;
             var payment = await _context.Payments
                 .Include(p => p.Order)
                 .FirstOrDefaultAsync(p => p.PaymentId == orderCode, cancellationToken);
@@ -181,7 +193,7 @@ namespace SalesApp.BLL.Services
                 return new BasicResponse(false, "Phương thức thanh toán không phải PayOS.");
             }
 
-            if (payment.Amount != request.Data.Amount)
+            if (payment.Amount != webhookData.Amount)
             {
                 return new BasicResponse(false, "Số tiền không khớp.");
             }

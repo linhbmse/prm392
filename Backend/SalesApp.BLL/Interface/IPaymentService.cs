@@ -9,6 +9,6 @@ namespace SalesApp.BLL.Interfaces
     public interface IPaymentService
     {
         Task<CheckoutResponseDto> CheckoutAsync(ClaimsPrincipal userPrincipal, CheckoutRequestDto request, CancellationToken cancellationToken = default);
-        Task<BasicResponse> HandlePayosWebhookAsync(PayosWebhookRequest request, CancellationToken cancellationToken = default);
+        Task<BasicResponse> HandlePayosWebhookAsync(Webhook request, CancellationToken cancellationToken = default);
     }
 }

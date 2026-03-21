@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PayOS.Models.Webhooks;
 using SalesApp.BLL.DTOs;
 using SalesApp.BLL.Interfaces;
 using System;
@@ -21,7 +22,7 @@ namespace SalesApp.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> ReceiveWebhook(PayosWebhookRequest webhook, CancellationToken cancellationToken = default)
+        public async Task<ActionResult> ReceiveWebhook(Webhook webhook, CancellationToken cancellationToken = default)
         {
             if (webhook == null)
             {
