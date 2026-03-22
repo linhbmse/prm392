@@ -139,7 +139,16 @@ public class CartFragment extends Fragment {
                     intent.putExtra("orderResponse", order);
                     startActivity(intent);
                 } else {
-                    Toast.makeText(getContext(), "Failed to create order", Toast.LENGTH_SHORT).show();
+                    String errorMsg = "Failed to create order";
+                    try {
+                        if (response.errorBody() != null) {
+                            errorMsg = response.errorBody().string();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    Log.e("ORDER_CREATE_ERROR", "Code: " + response.code() + " Error: " + errorMsg);
+                    Toast.makeText(getContext(), "Error: " + errorMsg, Toast.LENGTH_LONG).show();
                 }
             }
 
