@@ -22,7 +22,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Material3.DayNight.NoActionBar"
-        android:usesCleartextTraffic="true"> <activity
+        android:usesCleartextTraffic="true">
+
+        <activity
             android:name=".HomeActivity"
             android:exported="true">
             <intent-filter>
@@ -45,7 +47,15 @@
 
         <activity
             android:name=".PaymentActivity"
-            android:exported="false" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Deep Link cho PayOS -->
+                <data android:scheme="myapp" android:host="payos" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".RegisterActivity"
@@ -63,6 +73,15 @@
             android:name=".OrderActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ChatActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".OrderSuccessActivity"
+            android:exported="false" />
+
+        <!--
         <service
             android:name=".services.MyFirebaseMessagingService"
             android:exported="false">
@@ -70,6 +89,7 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+        -->
 
         <service android:name=".services.FloatingBubbleService" />
         <service android:name=".services.ChatService" />
