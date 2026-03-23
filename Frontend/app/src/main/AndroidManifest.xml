@@ -34,19 +34,7 @@
         </activity>
 
         <activity
-            android:name=".PayPalRedirectActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="myapp" android:host="paypal" android:path="/success" />
-                <data android:scheme="myapp" android:host="paypal" android:path="/cancel" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".PaymentActivity"
+            android:name=".PayOSRedirectActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -54,8 +42,17 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <!-- Deep Link cho PayOS -->
                 <data android:scheme="myapp" android:host="payos" />
+                <data android:scheme="myapp" android:host="payos" android:path="/success" />
+                <data android:scheme="myapp" android:host="payos" android:path="/cancel" />
+                <!-- Support legacy paypal host if needed -->
+                <data android:scheme="myapp" android:host="paypal" android:path="/success" />
+                <data android:scheme="myapp" android:host="paypal" android:path="/cancel" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".PaymentActivity"
+            android:exported="false" />
 
         <activity
             android:name=".RegisterActivity"

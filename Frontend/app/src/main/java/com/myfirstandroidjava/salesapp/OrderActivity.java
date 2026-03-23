@@ -51,13 +51,27 @@ public class OrderActivity extends AppCompatActivity {
             orderId = order.getOrderId();
             displayOrder(order);
 
-            // Only show pay button for PAYOS payment method
+            // Logic for Pay Button based on Payment Method
             if ("PAYOS".equalsIgnoreCase(order.getPaymentMethod())) {
+                btnPayNow.setText("Pay Now with PayOS");
+                btnPayNow.setEnabled(true);
                 btnPayNow.setOnClickListener(v -> startPayOSCheckout(orderId));
             } else {
-                btnPayNow.setText("Order Placed (COD)");
-                btnPayNow.setEnabled(false);
+                // For COD, the order is already placed. Let the user go home.
+                btnPayNow.setText("Back to Home");
+                btnPayNow.setEnabled(true);
+                btnPayNow.setClickable(true);
+                btnPayNow.setOnClickListener(v -> {
+                    Toast.makeText(this, "Returning to Home", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(OrderActivity.this, HomeActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                });
             }
+        } else {
+            Toast.makeText(this, "Order data missing", Toast.LENGTH_SHORT).show();
+            finish();
         }
     }
 
@@ -79,7 +93,7 @@ public class OrderActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<CheckoutResponse> call, Response<CheckoutResponse> response) {
                 btnPayNow.setEnabled(true);
-                btnPayNow.setText("Pay Now");
+                btnPayNow.setText("Pay Now with PayOS");
 
                 if (response.isSuccessful() && response.body() != null) {
                     CheckoutResponse checkout = response.body();
@@ -99,7 +113,7 @@ public class OrderActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<CheckoutResponse> call, Throwable t) {
                 btnPayNow.setEnabled(true);
-                btnPayNow.setText("Pay Now");
+                btnPayNow.setText("Pay Now with PayOS");
                 Log.e("PayOS", "Error: " + t.getMessage());
                 Toast.makeText(OrderActivity.this, "Payment error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }

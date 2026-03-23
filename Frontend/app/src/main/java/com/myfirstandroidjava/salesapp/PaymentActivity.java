@@ -41,33 +41,6 @@ public class PaymentActivity extends AppCompatActivity {
             payBtn.setEnabled(false);
             payBtn.setText("No order to pay");
         }
-
-        // Xử lý Deep Link khi quay lại từ trình duyệt
-        handleDeepLink(getIntent());
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        setIntent(intent);
-        handleDeepLink(intent);
-    }
-
-    private void handleDeepLink(Intent intent) {
-        Uri data = intent.getData();
-        if (data != null && "myapp".equals(data.getScheme()) && "payos".equals(data.getHost())) {
-            // Kiểm tra các query parameter từ PayOS (ví dụ: status, orderCode)
-            String status = data.getQueryParameter("status");
-            if ("PAID".equals(status)) {
-                Toast.makeText(this, "Thanh toán thành công!", Toast.LENGTH_LONG).show();
-                // Chuyển sang màn hình thành công hoặc cập nhật UI
-                finish();
-            } else if ("CANCELLED".equals(status)) {
-                Toast.makeText(this, "Bạn đã hủy thanh toán.", Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(this, "Trạng thái thanh toán: " + status, Toast.LENGTH_LONG).show();
-            }
-        }
     }
 
     private void startPayOSCheckout(int orderId) {
