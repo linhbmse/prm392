@@ -6,13 +6,16 @@ import com.myfirstandroidjava.salesapp.utils.Constants;
 import com.myfirstandroidjava.salesapp.utils.TokenManager;
 
 import java.io.IOException;
-
+import java.net.InetAddress;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Dns;
+import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.dnsoverhttps.DnsOverHttps;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -38,15 +41,39 @@ public class RetrofitClient {
     }
 
     public static Retrofit getClient(Context context, String token) {
+        return new Retrofit.Builder()
+                .baseUrl(getSafeApiBaseUrl())
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(buildHttpClient(token))
+                .build();
+    }
+
+    /**
+     * Create a public Retrofit client (no authentication).
+     */
+    public static Retrofit getClientPublic(Context context) {
+        if (publicRetrofit == null) {
+            publicRetrofit = new Retrofit.Builder()
+                    .baseUrl(getSafeApiBaseUrl())
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .client(buildHttpClient(null))
+                    .build();
+        }
+        return publicRetrofit;
+    }
+
+    private static OkHttpClient buildHttpClient(String token) {
         OkHttpClient.Builder httpClient = new OkHttpClient.Builder()
-                .connectTimeout(60, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS);
+                .connectTimeout(25, TimeUnit.SECONDS)
+                .readTimeout(25, TimeUnit.SECONDS)
+                .writeTimeout(25, TimeUnit.SECONDS)
+                .callTimeout(35, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true);
 
         if (token != null && !token.isEmpty()) {
             httpClient.addInterceptor(new Interceptor() {
                 @Override
-                public okhttp3.Response intercept(Chain chain) throws IOException {
+                public Response intercept(Chain chain) throws IOException {
                     Request original = chain.request();
                     Request.Builder requestBuilder = original.newBuilder()
                             .header("Authorization", "Bearer " + token)
@@ -56,30 +83,29 @@ public class RetrofitClient {
             });
         }
 
-        return new Retrofit.Builder()
-                .baseUrl(getSafeApiBaseUrl())
-                .addConverterFactory(GsonConverterFactory.create())
-                .client(httpClient.build())
-                .build();
-    }
-
-    /**
-     * Create a public Retrofit client (no authentication).
-     */
-    public static Retrofit getClientPublic(Context context) {
-        if (publicRetrofit == null) {
-            OkHttpClient.Builder httpClient = new OkHttpClient.Builder()
-                    .connectTimeout(60, TimeUnit.SECONDS)
-                    .readTimeout(60, TimeUnit.SECONDS)
-                    .writeTimeout(60, TimeUnit.SECONDS);
-
-            publicRetrofit = new Retrofit.Builder()
-                    .baseUrl(getSafeApiBaseUrl())
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .client(httpClient.build())
+        try {
+            OkHttpClient bootstrapClient = new OkHttpClient.Builder()
+                    .connectTimeout(15, TimeUnit.SECONDS)
+                    .readTimeout(15, TimeUnit.SECONDS)
+                    .writeTimeout(15, TimeUnit.SECONDS)
                     .build();
+
+            DnsOverHttps dnsOverHttps = new DnsOverHttps.Builder()
+                    .client(bootstrapClient)
+                    .url(HttpUrl.get("https://dns.google/dns-query"))
+                    .bootstrapDnsHosts(
+                            InetAddress.getByName("8.8.8.8"),
+                            InetAddress.getByName("8.8.4.4"))
+                    .resolvePrivateAddresses(true)
+                    .systemDns(Dns.SYSTEM)
+                    .build();
+
+            httpClient.dns(dnsOverHttps);
+        } catch (Exception ignored) {
+            // Fall back to the default resolver if DoH cannot be created.
         }
-        return publicRetrofit;
+
+        return httpClient.build();
     }
 
     // ===== Convenience Factory Methods =====

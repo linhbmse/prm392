@@ -1,14 +1,14 @@
 package com.myfirstandroidjava.salesapp.adapters;
 
-import android.graphics.Color;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.myfirstandroidjava.salesapp.R;
@@ -55,32 +55,45 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
     }
 
     class ChatViewHolder extends RecyclerView.ViewHolder {
+        private LinearLayout messageRoot;
+        private LinearLayout messageBubble;
         private TextView textViewUser;
         private TextView textViewMessage;
         private TextView textViewTimestamp;
 
         public ChatViewHolder(@NonNull View itemView) {
             super(itemView);
+            messageRoot = itemView.findViewById(R.id.messageRoot);
+            messageBubble = itemView.findViewById(R.id.messageBubble);
             textViewUser = itemView.findViewById(R.id.textViewUser);
             textViewMessage = itemView.findViewById(R.id.textViewMessage);
             textViewTimestamp = itemView.findViewById(R.id.textViewTimestamp);
         }
 
         public void bind(ChatMessage chatMessage) {
-            String message = chatMessage.getMessage();
+            boolean isCurrentUser = chatMessage.getUserId() == currentUserId;
+            String message = chatMessage.getMessage() != null ? chatMessage.getMessage() : "";
 
-            textViewUser.setVisibility(View.VISIBLE);
-            textViewUser.setText(chatMessage.getUsername() != null ? chatMessage.getUsername() : "Unknown");
+            messageRoot.setGravity(isCurrentUser ? Gravity.END : Gravity.START);
+            messageBubble.setBackgroundResource(isCurrentUser
+                    ? R.drawable.bg_chat_bubble_outgoing
+                    : R.drawable.bg_chat_bubble_incoming);
+
+            textViewUser.setVisibility(isCurrentUser ? View.GONE : View.VISIBLE);
+            textViewUser.setText(chatMessage.getUsername() != null ? chatMessage.getUsername() : "Support");
             textViewMessage.setText(message);
+            textViewMessage.setTextColor(ContextCompat.getColor(itemView.getContext(),
+                    isCurrentUser ? android.R.color.white : R.color.text_primary));
 
-            // Display sentAt timestamp
             String sentAt = chatMessage.getSentAt();
             if (sentAt != null && sentAt.length() >= 16) {
-                // Parse ISO date string, show just time part
                 textViewTimestamp.setText(sentAt.substring(11, 16));
             } else {
                 textViewTimestamp.setText("");
             }
+
+            textViewTimestamp.setTextColor(ContextCompat.getColor(itemView.getContext(),
+                    isCurrentUser ? android.R.color.white : R.color.text_muted));
         }
     }
 }
