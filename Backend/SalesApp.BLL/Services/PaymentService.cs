@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace SalesApp.BLL.Services
 {
@@ -20,13 +21,15 @@ namespace SalesApp.BLL.Services
         private readonly IConfiguration _configuration;
         private readonly IPayosPaymentGateway _payosGateway;
         private readonly INotificationService _notificationService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public PaymentService(AppDbContext context, IConfiguration configuration, IPayosPaymentGateway payosGateway, INotificationService notificationService)
+        public PaymentService(AppDbContext context, IConfiguration configuration, IPayosPaymentGateway payosGateway, INotificationService notificationService, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _configuration = configuration;
             _payosGateway = payosGateway;
             _notificationService = notificationService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         private int GetUserId(ClaimsPrincipal principal)
@@ -114,7 +117,22 @@ namespace SalesApp.BLL.Services
             var clientId = _configuration["PayOS:ClientId"];
             var apiKey = _configuration["PayOS:ApiKey"];
             var checksumKey = _configuration["PayOS:ChecksumKey"];
-            var frontendUrl = _configuration["FrontendBaseUrl"] ?? "myapp:/";
+            var frontendUrl = _configuration["FrontendBaseUrl"];
+
+            // If FrontendBaseUrl is not set (typical for local mobile testing), we point the return URL
+            // to our own backend's HTTP 302 redirect endpoint. This bypasses Chrome's uninitiated JS redirect block
+            // since server-side 302 redirects to custom URI schemes are explicitly allowed by Chrome.
+            string returnUrl;
+            if (string.IsNullOrEmpty(frontendUrl)) 
+            {
+                var request = _httpContextAccessor.HttpContext.Request;
+                var backendBaseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
+                returnUrl = $"{backendBaseUrl}/api/payos/webhook/mobile-redirect";
+            }
+            else
+            {
+                returnUrl = $"{frontendUrl}/payos-return";
+            }
 
             var payOsClient = new PayOSClient(clientId, apiKey, checksumKey);
 
@@ -127,8 +145,8 @@ namespace SalesApp.BLL.Services
                 OrderCode = payment.PaymentId,
                 Amount = amountVal,
                 Description = desc,
-                ReturnUrl = $"{frontendUrl}/payos-return",
-                CancelUrl = $"{frontendUrl}/payos-return",
+                ReturnUrl = returnUrl,
+                CancelUrl = returnUrl,
                 Items = new List<PaymentLinkItem>
                 {
                     new PaymentLinkItem
