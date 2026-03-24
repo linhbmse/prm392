@@ -22,7 +22,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Material3.DayNight.NoActionBar"
-        android:usesCleartextTraffic="true"> <activity
+        android:usesCleartextTraffic="true">
+
+        <activity
             android:name=".HomeActivity"
             android:exported="true">
             <intent-filter>
@@ -32,12 +34,17 @@
         </activity>
 
         <activity
-            android:name=".PayPalRedirectActivity"
+            android:name=".PayOSRedirectActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Deep Link cho PayOS -->
+                <data android:scheme="myapp" android:host="payos" />
+                <data android:scheme="myapp" android:host="payos" android:path="/success" />
+                <data android:scheme="myapp" android:host="payos" android:path="/cancel" />
+                <!-- Support legacy paypal host if needed -->
                 <data android:scheme="myapp" android:host="paypal" android:path="/success" />
                 <data android:scheme="myapp" android:host="paypal" android:path="/cancel" />
             </intent-filter>
@@ -63,6 +70,15 @@
             android:name=".OrderActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ChatActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".OrderSuccessActivity"
+            android:exported="false" />
+
+        <!--
         <service
             android:name=".services.MyFirebaseMessagingService"
             android:exported="false">
@@ -70,6 +86,7 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+        -->
 
         <service android:name=".services.FloatingBubbleService" />
         <service android:name=".services.ChatService" />

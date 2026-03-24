@@ -5,7 +5,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.google.firebase.messaging.FirebaseMessaging;
+// import com.google.firebase.messaging.FirebaseMessaging;
 import com.myfirstandroidjava.salesapp.models.RegisterDeviceTokenRequest;
 import com.myfirstandroidjava.salesapp.network.DeviceTokenAPIService;
 import com.myfirstandroidjava.salesapp.network.RetrofitClient;
@@ -24,6 +24,7 @@ public class DeviceTokenUtil {
             sendTokenToServer(context, savedToken);
             fcmTokenManager.clearToken();
         } else {
+            /* 
             FirebaseMessaging.getInstance().getToken()
                     .addOnCompleteListener(task -> {
                         if (!task.isSuccessful()) {
@@ -33,6 +34,8 @@ public class DeviceTokenUtil {
                         String token = task.getResult();
                         sendTokenToServer(context, token);
                     });
+            */
+            Log.d("DEVICE_TOKEN_UTIL", "Firebase is disabled, skipping token fetch.");
         }
     }
 
