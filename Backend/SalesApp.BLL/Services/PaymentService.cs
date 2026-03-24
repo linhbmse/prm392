@@ -114,7 +114,7 @@ namespace SalesApp.BLL.Services
             var clientId = _configuration["PayOS:ClientId"];
             var apiKey = _configuration["PayOS:ApiKey"];
             var checksumKey = _configuration["PayOS:ChecksumKey"];
-            var frontendUrl = _configuration["FrontendBaseUrl"] ?? "http://localhost:5173";
+            var frontendUrl = _configuration["FrontendBaseUrl"] ?? "myapp://";
 
             var payOsClient = new PayOSClient(clientId, apiKey, checksumKey);
 
@@ -127,8 +127,8 @@ namespace SalesApp.BLL.Services
                 OrderCode = payment.PaymentId,
                 Amount = amountVal,
                 Description = desc,
-                ReturnUrl = $"{frontendUrl}/payment-success",
-                CancelUrl = $"{frontendUrl}/payment-cancel",
+                ReturnUrl = $"{frontendUrl}/payos-return",
+                CancelUrl = $"{frontendUrl}/payos-return",
                 Items = new List<PaymentLinkItem>
                 {
                     new PaymentLinkItem
