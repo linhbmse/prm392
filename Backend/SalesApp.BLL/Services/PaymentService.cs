@@ -117,21 +117,22 @@ namespace SalesApp.BLL.Services
             var clientId = _configuration["PayOS:ClientId"];
             var apiKey = _configuration["PayOS:ApiKey"];
             var checksumKey = _configuration["PayOS:ChecksumKey"];
-            var frontendUrl = _configuration["FrontendBaseUrl"];
-
-            // If FrontendBaseUrl is not set (typical for local mobile testing), we point the return URL
-            // to our own backend's HTTP 302 redirect endpoint. This bypasses Chrome's uninitiated JS redirect block
-            // since server-side 302 redirects to custom URI schemes are explicitly allowed by Chrome.
-            string returnUrl;
-            if (string.IsNullOrEmpty(frontendUrl)) 
+            // If the frontend client explicitly requests a ReturnUrl (Web / Mobile), prioritize it.
+            // Otherwise, check FrontendBaseUrl, and finally fallback to Mobile Redirect Endpoint.
+            string returnUrl = request.ReturnUrl;
+            if (string.IsNullOrEmpty(returnUrl))
             {
-                var httpRequest = _httpContextAccessor.HttpContext.Request;
-                var backendBaseUrl = $"{httpRequest.Scheme}://{httpRequest.Host}{httpRequest.PathBase}";
-                returnUrl = $"{backendBaseUrl}/api/payos/webhook/mobile-redirect";
-            }
-            else
-            {
-                returnUrl = $"{frontendUrl}/payos-return";
+                var frontendUrl = _configuration["FrontendBaseUrl"];
+                if (string.IsNullOrEmpty(frontendUrl)) 
+                {
+                    var httpRequest = _httpContextAccessor.HttpContext.Request;
+                    var backendBaseUrl = $"{httpRequest.Scheme}://{httpRequest.Host}{httpRequest.PathBase}";
+                    returnUrl = $"{backendBaseUrl}/api/payos/webhook/mobile-redirect";
+                }
+                else
+                {
+                    returnUrl = $"{frontendUrl}/payos-return";
+                }
             }
 
             var payOsClient = new PayOSClient(clientId, apiKey, checksumKey);
