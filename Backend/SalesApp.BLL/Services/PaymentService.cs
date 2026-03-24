@@ -125,8 +125,8 @@ namespace SalesApp.BLL.Services
             string returnUrl;
             if (string.IsNullOrEmpty(frontendUrl)) 
             {
-                var request = _httpContextAccessor.HttpContext.Request;
-                var backendBaseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
+                var httpRequest = _httpContextAccessor.HttpContext.Request;
+                var backendBaseUrl = $"{httpRequest.Scheme}://{httpRequest.Host}{httpRequest.PathBase}";
                 returnUrl = $"{backendBaseUrl}/api/payos/webhook/mobile-redirect";
             }
             else
