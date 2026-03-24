@@ -73,4 +73,5 @@ dependencies {
 
     // SignalR
     implementation("com.microsoft.signalr:signalr:8.0.0")
+    implementation("com.squareup.okhttp3:okhttp-dnsoverhttps:4.12.0")
 }

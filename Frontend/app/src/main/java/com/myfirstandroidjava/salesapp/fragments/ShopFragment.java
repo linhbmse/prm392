@@ -64,7 +64,7 @@ public class ShopFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_shop, container, false);
         TokenManager tokenManager = new TokenManager(getContext());
         String token = tokenManager.getToken();
-        productAPIService = RetrofitClient.getClient(requireContext(), token).create(ProductAPIService.class);
+        productAPIService = RetrofitClient.getClientPublic(requireContext()).create(ProductAPIService.class);
 
         recyclerView = view.findViewById(R.id.recyclerViewProducts);
         progressBar = view.findViewById(R.id.progressBar);
