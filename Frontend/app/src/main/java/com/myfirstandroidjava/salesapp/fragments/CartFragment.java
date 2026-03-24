@@ -8,7 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -65,7 +66,7 @@ public class CartFragment extends Fragment {
 
         btnCheckout.setOnClickListener(v -> {
             if (cartItems != null && !cartItems.isEmpty()) {
-                showAddressInputDialog();
+                showCheckoutDialog();
             } else {
                 Toast.makeText(getContext(), "Your cart is empty.", Toast.LENGTH_SHORT).show();
             }
@@ -100,31 +101,39 @@ public class CartFragment extends Fragment {
         });
     }
 
-    private void showAddressInputDialog() {
+    private void showCheckoutDialog() {
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getContext());
-        builder.setTitle("Enter Delivery Address");
+        builder.setTitle("Checkout");
 
-        final android.widget.EditText input = new android.widget.EditText(getContext());
-        input.setHint("Enter your address");
-        input.setPadding(32, 16, 32, 16);
-        builder.setView(input);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_checkout, null);
+        builder.setView(dialogView);
+
+        EditText etAddress = dialogView.findViewById(R.id.etAddress);
+        RadioGroup rgPayment = dialogView.findViewById(R.id.rgPayment);
 
         builder.setPositiveButton("Confirm", (dialog, which) -> {
-            String address = input.getText().toString().trim();
+            String address = etAddress.getText().toString().trim();
             if (address.isEmpty()) {
                 Toast.makeText(getContext(), "Address is required", Toast.LENGTH_SHORT).show();
                 return;
             }
-            createOrder(address);
+
+            String paymentMethod = "COD";
+            int checkedId = rgPayment.getCheckedRadioButtonId();
+            if (checkedId == R.id.rbPayOS) {
+                paymentMethod = "PAYOS";
+            }
+
+            createOrder(address, paymentMethod);
         });
 
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
         builder.show();
     }
 
-    private void createOrder(String address) {
+    private void createOrder(String address, String paymentMethod) {
         CreateOrderRequest request = new CreateOrderRequest();
-        request.setPaymentMethod("COD");
+        request.setPaymentMethod(paymentMethod);
         request.setBillingAddress(address);
 
         Call<OrderResponse> call = orderAPIService.createOrder(request);

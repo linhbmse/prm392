@@ -51,6 +51,7 @@ public class PaymentActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     CheckoutResponse checkout = response.body();
                     if (checkout.isSuccess() && checkout.getCheckoutUrl() != null) {
+                        // Mở trình duyệt để thanh toán
                         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(checkout.getCheckoutUrl()));
                         startActivity(browserIntent);
                     } else {

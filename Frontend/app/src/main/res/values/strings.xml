@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Sales App</string>
+    <string name="pay_with_payos">Pay with PayOS</string>
 </resources>
