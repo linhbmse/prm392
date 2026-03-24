@@ -60,6 +60,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".PayOSWebViewActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".LoginActivity"
             android:exported="false" />
 

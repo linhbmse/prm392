@@ -89,6 +89,7 @@ public class OrderActivity extends AppCompatActivity {
         btnPayNow.setText("Processing...");
 
         CheckoutRequest request = new CheckoutRequest(orderId);
+        request.setReturnUrl("myapp://payos-return");
         paymentAPIService.checkout(request).enqueue(new Callback<CheckoutResponse>() {
             @Override
             public void onResponse(Call<CheckoutResponse> call, Response<CheckoutResponse> response) {
@@ -98,9 +99,10 @@ public class OrderActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     CheckoutResponse checkout = response.body();
                     if (checkout.isSuccess() && checkout.getCheckoutUrl() != null) {
-                        // Open PayOS checkout URL in browser
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(checkout.getCheckoutUrl()));
-                        startActivity(browserIntent);
+                        // Open PayOS checkout URL in in-app WebView
+                        Intent intent = new Intent(OrderActivity.this, PayOSWebViewActivity.class);
+                        intent.putExtra("checkoutUrl", checkout.getCheckoutUrl());
+                        startActivity(intent);
                     } else {
                         String msg = checkout.getMessage() != null ? checkout.getMessage() : "Checkout failed";
                         Toast.makeText(OrderActivity.this, msg, Toast.LENGTH_SHORT).show();
