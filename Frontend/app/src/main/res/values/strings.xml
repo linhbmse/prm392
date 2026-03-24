@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Sales App</string>
     <string name="pay_with_payos">Pay with PayOS</string>
+    <string name="shop_title">SalesShop</string>
+    <string name="shop_subtitle">Smart picks and trending tech for your day</string>
+    <string name="shop_section_title">Popular Picks</string>
+    <string name="shop_section_caption">Fresh gear curated for you</string>
 </resources>

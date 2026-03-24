@@ -65,7 +65,10 @@ public class AlertFragment extends Fragment implements NotificationAdapter.OnNot
                 progressBar.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
                     notifications.clear();
-                    notifications.addAll(response.body().getItems());
+                    List<NotificationItem> items = response.body().getItems();
+                    if (items != null) {
+                        notifications.addAll(items);
+                    }
                     adapter.notifyDataSetChanged();
                 } else {
                     Toast.makeText(getContext(), "Failed to load notifications", Toast.LENGTH_SHORT).show();
