@@ -114,7 +114,7 @@ namespace SalesApp.BLL.Services
             var clientId = _configuration["PayOS:ClientId"];
             var apiKey = _configuration["PayOS:ApiKey"];
             var checksumKey = _configuration["PayOS:ChecksumKey"];
-            var frontendUrl = _configuration["FrontendBaseUrl"] ?? "myapp://";
+            var frontendUrl = _configuration["FrontendBaseUrl"] ?? "myapp:/";
 
             var payOsClient = new PayOSClient(clientId, apiKey, checksumKey);
 

@@ -33,8 +33,11 @@ public class PayOSRedirectActivity extends AppCompatActivity {
             // or by path if configured that way in the returnUrl.
             String status = uri.getQueryParameter("status");
             String path = uri.getPath();
+            String cancel = uri.getQueryParameter("cancel");
+            String code = uri.getQueryParameter("code");
             
-            if ("PAID".equals(status) || (path != null && path.contains("success"))) {
+            // PayOS usually passes status=PAID or cancel=false when successful
+            if ("PAID".equals(status) || "false".equals(cancel) || "00".equals(code) || (path != null && path.contains("success"))) {
                 Toast.makeText(this, "Payment successful!", Toast.LENGTH_LONG).show();
                 Intent successIntent = new Intent(this, OrderSuccessActivity.class);
                 String orderId = uri.getQueryParameter("orderId");
@@ -45,7 +48,7 @@ public class PayOSRedirectActivity extends AppCompatActivity {
                     successIntent.putExtra("orderId", orderId);
                 }
                 startActivity(successIntent);
-            } else if ("CANCELLED".equals(status) || (path != null && path.contains("cancel"))) {
+            } else if ("CANCELLED".equals(status) || "true".equals(cancel) || (path != null && path.contains("cancel"))) {
                 Toast.makeText(this, "Payment canceled", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Payment status: " + (status != null ? status : "unknown"), Toast.LENGTH_SHORT).show();
