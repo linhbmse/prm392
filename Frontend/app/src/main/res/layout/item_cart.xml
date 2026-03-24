@@ -3,21 +3,24 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    card_view:cardCornerRadius="12dp"
-    card_view:cardElevation="4dp"
-    android:padding="12dp">
+    android:layout_marginBottom="12dp"
+    card_view:cardBackgroundColor="@color/surface_card"
+    card_view:cardCornerRadius="20dp"
+    card_view:cardElevation="7dp"
+    card_view:cardUseCompatPadding="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="12dp">
 
         <ImageView
             android:id="@+id/cartImage"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="92dp"
+            android:layout_height="92dp"
             android:layout_marginEnd="12dp"
+            android:background="@drawable/search_background"
             android:scaleType="centerCrop" />
 
         <LinearLayout
@@ -28,7 +31,8 @@
 
             <TextView
                 android:id="@+id/cartProductName"
-                android:textSize="16sp"
+                android:textColor="@color/text_primary"
+                android:textSize="17sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="4dp"
                 android:layout_width="match_parent"
@@ -36,19 +40,27 @@
 
             <TextView
                 android:id="@+id/cartPrice"
-                android:textColor="#6A1B9A"
+                android:textColor="@color/brand_accent"
+                android:textStyle="bold"
                 android:layout_marginBottom="4dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/cartQuantity"
+                android:background="@drawable/bg_soft_chip"
+                android:paddingStart="10dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="6dp"
+                android:textColor="@color/text_muted"
                 android:layout_marginBottom="4dp"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/cartTotal"
+                android:textColor="@color/text_primary"
                 android:textStyle="bold"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
