@@ -1,34 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="20dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/white">
+    android:orientation="vertical"
+    android:padding="20dp">
 
     <TextView
-        android:text="Enter your delivery address"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        android:layout_marginBottom="10dp"
-        android:textColor="#212121"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="Delivery Address"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
 
     <EditText
         android:id="@+id/etAddress"
-        android:hint="Street, City, Zip Code"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="Enter your full address"
         android:inputType="textPostalAddress"
-        android:backgroundTint="#2196F3" />
+        android:layout_marginBottom="16dp"/>
 
-    <Button
-        android:id="@+id/btnConfirmOrder"
-        android:text="Confirm Order"
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:backgroundTint="#2196F3"
-        android:textColor="@android:color/white"
-        android:layout_marginTop="16dp" />
+        android:text="Payment Method"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+
+    <RadioGroup
+        android:id="@+id/rgPayment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:id="@+id/rbCOD"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cash on Delivery (COD)"
+            android:checked="true"/>
+
+        <RadioButton
+            android:id="@+id/rbPayOS"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Pay with PayOS (Bank Transfer/QR)"/>
+
+    </RadioGroup>
+
 </LinearLayout>

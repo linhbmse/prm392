@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.myfirstandroidjava.salesapp.models.LoginRequest;
 import com.myfirstandroidjava.salesapp.models.LoginResponse;
-import com.google.firebase.messaging.FirebaseMessaging;
+// import com.google.firebase.messaging.FirebaseMessaging;
 import com.myfirstandroidjava.salesapp.models.RegisterDeviceTokenRequest;
 import com.myfirstandroidjava.salesapp.network.AuthAPIService;
 import com.myfirstandroidjava.salesapp.network.DeviceTokenAPIService;
@@ -109,6 +109,7 @@ public class LoginActivity extends AppCompatActivity {
             sendTokenToServer(savedToken);
             fcmTokenManager.clearToken();
         } else {
+            /*
             FirebaseMessaging.getInstance().getToken()
                     .addOnCompleteListener(task -> {
                         if (!task.isSuccessful()) {
@@ -118,6 +119,8 @@ public class LoginActivity extends AppCompatActivity {
                         String token = task.getResult();
                         sendTokenToServer(token);
                     });
+            */
+            Log.d("LOGIN_ACTIVITY", "Firebase is disabled, skipping token fetch.");
         }
     }
 
