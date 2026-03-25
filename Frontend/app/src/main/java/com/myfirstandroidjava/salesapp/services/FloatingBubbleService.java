@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -11,7 +12,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import com.myfirstandroidjava.salesapp.R;
-import com.myfirstandroidjava.salesapp.fragments.ChatFragment;
 
 public class FloatingBubbleService extends Service {
 
@@ -41,9 +41,21 @@ public class FloatingBubbleService extends Service {
         params.y = 100;
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        windowManager.addView(floatingBubbleView, params);
+        
+        try {
+            windowManager.addView(floatingBubbleView, params);
+        } catch (Exception e) {
+            Log.e("FloatingBubbleService", "Could not add window: " + e.getMessage());
+            stopSelf();
+            return;
+        }
 
         ImageView bubbleImage = floatingBubbleView.findViewById(R.id.bubble_image);
+        ImageView closeButton = floatingBubbleView.findViewById(R.id.close_bubble);
+
+        // Close button logic
+        closeButton.setOnClickListener(v -> stopSelf());
+
         bubbleImage.setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
@@ -60,8 +72,8 @@ public class FloatingBubbleService extends Service {
                         initialTouchY = event.getRawY();
                         return true;
                     case MotionEvent.ACTION_UP:
-                        if (Math.abs(event.getRawX() - initialTouchX) < 5 && Math.abs(event.getRawY() - initialTouchY) < 5) {
-                            // It's a click
+                        if (Math.abs(event.getRawX() - initialTouchX) < 10 && Math.abs(event.getRawY() - initialTouchY) < 10) {
+                            // It's a click - Open Chat
                             Intent intent = new Intent(FloatingBubbleService.this, com.myfirstandroidjava.salesapp.ChatActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);
@@ -81,8 +93,12 @@ public class FloatingBubbleService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (floatingBubbleView != null) {
-            windowManager.removeView(floatingBubbleView);
+        if (floatingBubbleView != null && windowManager != null) {
+            try {
+                windowManager.removeView(floatingBubbleView);
+            } catch (Exception e) {
+                Log.e("FloatingBubbleService", "Error removing view: " + e.getMessage());
+            }
         }
     }
 }

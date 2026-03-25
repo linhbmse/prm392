@@ -1,6 +1,7 @@
 package com.myfirstandroidjava.salesapp.models;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class OrderResponse implements Serializable {
     private int orderId;
@@ -9,6 +10,7 @@ public class OrderResponse implements Serializable {
     private String orderStatus;
     private String billingAddress;
     private String orderDate;
+    private List<OrderItemResponse> orderItems;
 
     public int getOrderId() { return orderId; }
     public void setOrderId(int orderId) { this.orderId = orderId; }
@@ -27,4 +29,22 @@ public class OrderResponse implements Serializable {
 
     public String getOrderDate() { return orderDate; }
     public void setOrderDate(String orderDate) { this.orderDate = orderDate; }
+
+    public List<OrderItemResponse> getOrderItems() { return orderItems; }
+    public void setOrderItems(List<OrderItemResponse> orderItems) { this.orderItems = orderItems; }
+
+    public static class OrderItemResponse implements Serializable {
+        private String productName;
+        private int quantity;
+        private double unitPrice;
+
+        public String getProductName() { return productName; }
+        public void setProductName(String productName) { this.productName = productName; }
+
+        public int getQuantity() { return quantity; }
+        public void setQuantity(int quantity) { this.quantity = quantity; }
+
+        public double getUnitPrice() { return unitPrice; }
+        public void setUnitPrice(double unitPrice) { this.unitPrice = unitPrice; }
+    }
 }

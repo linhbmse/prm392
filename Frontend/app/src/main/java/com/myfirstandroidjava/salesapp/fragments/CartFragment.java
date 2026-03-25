@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,19 +24,23 @@ import com.myfirstandroidjava.salesapp.adapters.CartAdapter;
 import com.myfirstandroidjava.salesapp.models.CartItem;
 import com.myfirstandroidjava.salesapp.models.CartListResponse;
 import com.myfirstandroidjava.salesapp.models.CreateOrderRequest;
+import com.myfirstandroidjava.salesapp.models.GenericResponse;
 import com.myfirstandroidjava.salesapp.models.OrderResponse;
+import com.myfirstandroidjava.salesapp.models.UpdateCartItemRequest;
 import com.myfirstandroidjava.salesapp.network.CartAPIService;
 import com.myfirstandroidjava.salesapp.network.OrderAPIService;
 import com.myfirstandroidjava.salesapp.network.RetrofitClient;
 import com.myfirstandroidjava.salesapp.utils.TokenManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class CartFragment extends Fragment {
+public class CartFragment extends Fragment implements CartAdapter.OnCartActionListener {
     private RecyclerView recyclerView;
     private TextView tvTotal;
     private Button btnCheckout;
@@ -45,6 +48,7 @@ public class CartFragment extends Fragment {
     private OrderAPIService orderAPIService;
     private ArrayList<CartItem> cartItems;
     private double totalCartPrice;
+    private CartAdapter adapter;
 
     @Nullable
     @Override
@@ -66,9 +70,9 @@ public class CartFragment extends Fragment {
 
         btnCheckout.setOnClickListener(v -> {
             if (cartItems != null && !cartItems.isEmpty()) {
-                showCheckoutDialog();
+                showCheckoutDialog(null); // Checkout all
             } else {
-                Toast.makeText(getContext(), "Your cart is empty.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Giỏ hàng trống.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -85,36 +89,98 @@ public class CartFragment extends Fragment {
                     CartListResponse cart = response.body();
                     cartItems = new ArrayList<>(cart.getItems());
                     totalCartPrice = cart.getTotalPrice();
-                    recyclerView.setAdapter(new CartAdapter(cartItems));
-                    tvTotal.setText(String.format("Total: $%.2f", totalCartPrice));
+                    
+                    if (adapter == null) {
+                        adapter = new CartAdapter(cartItems, CartFragment.this);
+                        recyclerView.setAdapter(adapter);
+                    } else {
+                        adapter.updateList(cartItems);
+                    }
+                    
+                    tvTotal.setText(String.format("Tổng cộng: $%.2f", totalCartPrice));
                 } else {
-                    Toast.makeText(getContext(), "Failed to load cart.", Toast.LENGTH_SHORT).show();
-                    Log.e("CART_LIST_ERROR", "Response code: " + response.code());
+                    Toast.makeText(getContext(), "Không thể tải giỏ hàng.", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<CartListResponse> call, Throwable t) {
-                t.printStackTrace();
-                Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void showCheckoutDialog() {
+    @Override
+    public void onUpdateQuantity(CartItem item, int newQuantity) {
+        UpdateCartItemRequest request = new UpdateCartItemRequest(newQuantity);
+        
+        cartAPIService.updateCartItem(item.getCartItemId(), request).enqueue(new Callback<GenericResponse>() {
+            @Override
+            public void onResponse(Call<GenericResponse> call, Response<GenericResponse> response) {
+                if (response.isSuccessful()) {
+                    fetchCartData();
+                } else {
+                    Toast.makeText(getContext(), "Không thể cập nhật số lượng", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<GenericResponse> call, Throwable t) {
+                Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onDeleteItem(CartItem item) {
+        cartAPIService.removeCartItem(item.getCartItemId()).enqueue(new Callback<GenericResponse>() {
+            @Override
+            public void onResponse(Call<GenericResponse> call, Response<GenericResponse> response) {
+                if (response.isSuccessful()) {
+                    fetchCartData();
+                    Toast.makeText(getContext(), "Đã xóa sản phẩm", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<GenericResponse> call, Throwable t) {
+                Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onBuyNow(CartItem item) {
+        showCheckoutDialog(item);
+    }
+
+    private void showCheckoutDialog(@Nullable CartItem singleItem) {
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getContext());
-        builder.setTitle("Checkout");
+        builder.setTitle(singleItem == null ? "Thanh toán tất cả" : "Mua ngay: " + singleItem.getProductName());
 
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_checkout, null);
         builder.setView(dialogView);
 
         EditText etAddress = dialogView.findViewById(R.id.etAddress);
         RadioGroup rgPayment = dialogView.findViewById(R.id.rgPayment);
+        TextView tvDialogTotal = dialogView.findViewById(R.id.tvTotalAmount);
+        
+        double priceToShow;
+        if (singleItem == null) {
+            priceToShow = totalCartPrice;
+        } else {
+            // Tính toán giá tiền = giá sản phẩm * số lượng
+            priceToShow = singleItem.getPrice() * singleItem.getQuantity();
+        }
 
-        builder.setPositiveButton("Confirm", (dialog, which) -> {
+        if (tvDialogTotal != null) {
+            tvDialogTotal.setText(String.format("Số tiền: $%.2f", priceToShow));
+        }
+
+        builder.setPositiveButton("Xác nhận", (dialog, which) -> {
             String address = etAddress.getText().toString().trim();
             if (address.isEmpty()) {
-                Toast.makeText(getContext(), "Address is required", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Địa chỉ là bắt buộc", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -124,47 +190,45 @@ public class CartFragment extends Fragment {
                 paymentMethod = "PAYOS";
             }
 
-            createOrder(address, paymentMethod);
+            List<Integer> itemIds = null;
+            if (singleItem != null) {
+                itemIds = Collections.singletonList(singleItem.getCartItemId());
+            }
+
+            createOrder(address, paymentMethod, itemIds);
         });
 
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
         builder.show();
     }
 
-    private void createOrder(String address, String paymentMethod) {
+    private void createOrder(String address, String paymentMethod, @Nullable List<Integer> cartItemIds) {
         CreateOrderRequest request = new CreateOrderRequest();
         request.setPaymentMethod(paymentMethod);
         request.setBillingAddress(address);
+        request.setCartItemIds(cartItemIds);
 
-        Call<OrderResponse> call = orderAPIService.createOrder(request);
-
-        call.enqueue(new Callback<OrderResponse>() {
+        orderAPIService.createOrder(request).enqueue(new Callback<OrderResponse>() {
             @Override
             public void onResponse(Call<OrderResponse> call, Response<OrderResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    OrderResponse order = response.body();
-                    // Navigate to OrderActivity with order info
-                    Intent intent = new Intent(getActivity(), OrderActivity.class);
-                    intent.putExtra("orderResponse", order);
-                    startActivity(intent);
-                } else {
-                    String errorMsg = "Failed to create order";
-                    try {
-                        if (response.errorBody() != null) {
-                            errorMsg = response.errorBody().string();
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    Log.e("ORDER_CREATE_ERROR", "Code: " + response.code() + " Error: " + errorMsg);
-                    Toast.makeText(getContext(), "Error: " + errorMsg, Toast.LENGTH_LONG).show();
-                }
+                handleOrderResponse(response);
             }
 
             @Override
             public void onFailure(Call<OrderResponse> call, Throwable t) {
-                Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void handleOrderResponse(Response<OrderResponse> response) {
+        if (response.isSuccessful() && response.body() != null) {
+            OrderResponse order = response.body();
+            Intent intent = new Intent(getActivity(), OrderActivity.class);
+            intent.putExtra("orderResponse", order);
+            startActivity(intent);
+        } else {
+            Toast.makeText(getContext(), "Đặt hàng thất bại", Toast.LENGTH_SHORT).show();
+        }
     }
 }
