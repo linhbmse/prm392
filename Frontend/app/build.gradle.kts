@@ -56,8 +56,12 @@ dependencies {
     // RecyclerView
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
+    // Chrome Custom Tabs
+    implementation("androidx.browser:browser:1.8.0")
+
     // Bumptech
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation(libs.recyclerview)
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
     // Testing
@@ -72,4 +76,5 @@ dependencies {
 
     // SignalR
     implementation("com.microsoft.signalr:signalr:8.0.0")
+    implementation("com.squareup.okhttp3:okhttp-dnsoverhttps:4.12.0")
 }

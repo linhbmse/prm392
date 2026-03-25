@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace SalesApp.BLL.Services
 {
@@ -20,13 +21,15 @@ namespace SalesApp.BLL.Services
         private readonly IConfiguration _configuration;
         private readonly IPayosPaymentGateway _payosGateway;
         private readonly INotificationService _notificationService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public PaymentService(AppDbContext context, IConfiguration configuration, IPayosPaymentGateway payosGateway, INotificationService notificationService)
+        public PaymentService(AppDbContext context, IConfiguration configuration, IPayosPaymentGateway payosGateway, INotificationService notificationService, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _configuration = configuration;
             _payosGateway = payosGateway;
             _notificationService = notificationService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         private int GetUserId(ClaimsPrincipal principal)
@@ -114,7 +117,23 @@ namespace SalesApp.BLL.Services
             var clientId = _configuration["PayOS:ClientId"];
             var apiKey = _configuration["PayOS:ApiKey"];
             var checksumKey = _configuration["PayOS:ChecksumKey"];
-            var frontendUrl = _configuration["FrontendBaseUrl"] ?? "http://localhost:5173";
+            // If the frontend client explicitly requests a ReturnUrl (Web / Mobile), prioritize it.
+            // Otherwise, check FrontendBaseUrl, and finally fallback to Mobile Redirect Endpoint.
+            string returnUrl = request.ReturnUrl;
+            if (string.IsNullOrEmpty(returnUrl))
+            {
+                var frontendUrl = _configuration["FrontendBaseUrl"];
+                if (string.IsNullOrEmpty(frontendUrl)) 
+                {
+                    var httpRequest = _httpContextAccessor.HttpContext.Request;
+                    var backendBaseUrl = $"{httpRequest.Scheme}://{httpRequest.Host}{httpRequest.PathBase}";
+                    returnUrl = $"{backendBaseUrl}/api/payos/webhook/mobile-redirect";
+                }
+                else
+                {
+                    returnUrl = $"{frontendUrl}/payos-return";
+                }
+            }
 
             var payOsClient = new PayOSClient(clientId, apiKey, checksumKey);
 
@@ -127,8 +146,8 @@ namespace SalesApp.BLL.Services
                 OrderCode = payment.PaymentId,
                 Amount = amountVal,
                 Description = desc,
-                ReturnUrl = $"{frontendUrl}/payment-success",
-                CancelUrl = $"{frontendUrl}/payment-cancel",
+                ReturnUrl = returnUrl,
+                CancelUrl = returnUrl,
                 Items = new List<PaymentLinkItem>
                 {
                     new PaymentLinkItem

@@ -45,15 +45,17 @@ public class PaymentActivity extends AppCompatActivity {
 
     private void startPayOSCheckout(int orderId) {
         CheckoutRequest request = new CheckoutRequest(orderId);
+        request.setReturnUrl("myapp://payos-return");
         paymentAPIService.checkout(request).enqueue(new Callback<CheckoutResponse>() {
             @Override
             public void onResponse(Call<CheckoutResponse> call, Response<CheckoutResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     CheckoutResponse checkout = response.body();
                     if (checkout.isSuccess() && checkout.getCheckoutUrl() != null) {
-                        // Mở trình duyệt để thanh toán
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(checkout.getCheckoutUrl()));
-                        startActivity(browserIntent);
+                        // Mở trình duyệt bằng WebView của app để qua mặt hệ thống chặn URL giả
+                        Intent intent = new Intent(PaymentActivity.this, PayOSWebViewActivity.class);
+                        intent.putExtra("checkoutUrl", checkout.getCheckoutUrl());
+                        startActivity(intent);
                     } else {
                         String msg = checkout.getMessage() != null ? checkout.getMessage() : "Checkout failed";
                         Toast.makeText(PaymentActivity.this, msg, Toast.LENGTH_SHORT).show();

@@ -2,5 +2,19 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="purple_700">#3700B3</color>
+    <color name="purple_700">#18314F</color>
+    <color name="brand_primary">#18314F</color>
+    <color name="brand_primary_dark">#102238</color>
+    <color name="brand_accent">#E76F51</color>
+    <color name="surface">#F1E7DD</color>
+    <color name="surface_card">#F8F1EA</color>
+    <color name="surface_soft">#EADFD3</color>
+    <color name="text_primary">#1F2937</color>
+    <color name="text_muted">#5F6773</color>
+    <color name="border_soft">#D6C6B6</color>
+    <color name="nav_inactive">#6F7D93</color>
+    <color name="nav_active">#18314F</color>
+    <color name="surface_panel">#EFE3D7</color>
+    <color name="alert_unread">#E6EEF8</color>
+    <color name="alert_read">#F8F1EA</color>
 </resources>

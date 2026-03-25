@@ -1,6 +1,5 @@
 package com.myfirstandroidjava.salesapp.adapters;
 
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.myfirstandroidjava.salesapp.R;
@@ -39,7 +40,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     @Override
     public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
         NotificationItem item = notifications.get(position);
-        holder.tvMessage.setText(item.getMessage());
+        String message = item.getMessage();
+        holder.tvMessage.setText(message != null && !message.trim().isEmpty() ? message : "Notification");
 
         // Format the createdAt date
         String createdAt = item.getCreatedAt();
@@ -52,12 +54,16 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         // Style based on read status
         if (item.isRead()) {
             holder.tvMessage.setTypeface(null, Typeface.NORMAL);
-            holder.tvMessage.setTextColor(Color.GRAY);
-            holder.itemView.setBackgroundColor(Color.WHITE);
+            holder.tvMessage.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.text_muted));
+            holder.tvTime.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.text_muted));
+            holder.dotView.setVisibility(View.INVISIBLE);
+            holder.cardRoot.setCardBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.alert_read));
         } else {
             holder.tvMessage.setTypeface(null, Typeface.BOLD);
-            holder.tvMessage.setTextColor(Color.BLACK);
-            holder.itemView.setBackgroundColor(Color.parseColor("#F0F8FF"));
+            holder.tvMessage.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.text_primary));
+            holder.tvTime.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.brand_primary));
+            holder.dotView.setVisibility(View.VISIBLE);
+            holder.cardRoot.setCardBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.alert_unread));
         }
 
         holder.itemView.setOnClickListener(v -> {
@@ -73,10 +79,14 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     }
 
     static class NotificationViewHolder extends RecyclerView.ViewHolder {
+        CardView cardRoot;
+        View dotView;
         TextView tvMessage, tvTime;
 
         public NotificationViewHolder(@NonNull View itemView) {
             super(itemView);
+            cardRoot = itemView.findViewById(R.id.notificationCard);
+            dotView = itemView.findViewById(R.id.viewNotificationDot);
             tvMessage = itemView.findViewById(R.id.tvNotificationMessage);
             tvTime = itemView.findViewById(R.id.tvNotificationTime);
         }

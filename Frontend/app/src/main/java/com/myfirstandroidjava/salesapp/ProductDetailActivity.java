@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -52,6 +53,8 @@ public class ProductDetailActivity extends AppCompatActivity {
         imageProduct = findViewById(R.id.imageProduct);
         progressBar = findViewById(R.id.progressBar);
         btnAddToCart = findViewById(R.id.btnAddToCart);
+        ImageButton btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish());
 
         tokenManager = new TokenManager(this);
         String token = tokenManager.getToken();
@@ -100,6 +103,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                         }
                         Glide.with(ProductDetailActivity.this)
                                 .load(imageUrl)
+                                .fitCenter()
                                 .placeholder(R.drawable.placeholder)
                                 .error(R.drawable.image_error)
                                 .into(imageProduct);

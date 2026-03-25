@@ -2,8 +2,11 @@ package com.myfirstandroidjava.salesapp.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +44,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ShopFragment extends Fragment {
+    private static final long SEARCH_DEBOUNCE_MS = 350;
+
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private ProductAdapter adapter;
@@ -48,7 +53,18 @@ public class ShopFragment extends Fragment {
     private EditText etSearch;
     private Chip chipSortPrice, chipFilterCategory, chipReset;
     private ProductAPIService productAPIService;
-    
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Call<ProductListResponse> activeCall;
+    private final Runnable searchRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (getView() == null) {
+                return;
+            }
+            loadProducts(etSearch != null ? etSearch.getText().toString() : null);
+        }
+    };
+
     private List<ProductItem> originalList = new ArrayList<>();
     private boolean isAscending = true;
     private String selectedCategory = null;
@@ -59,7 +75,7 @@ public class ShopFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_shop, container, false);
         TokenManager tokenManager = new TokenManager(getContext());
         String token = tokenManager.getToken();
-        productAPIService = RetrofitClient.getClient(requireContext(), token).create(ProductAPIService.class);
+        productAPIService = RetrofitClient.getClientPublic(requireContext()).create(ProductAPIService.class);
 
         recyclerView = view.findViewById(R.id.recyclerViewProducts);
         progressBar = view.findViewById(R.id.progressBar);
@@ -134,14 +150,14 @@ public class ShopFragment extends Fragment {
                 categoriesSet.add(item.getCategoryName());
             }
         }
-        
+
         if (categoriesSet.isEmpty()) {
             Toast.makeText(getContext(), "Không có danh mục nào", Toast.LENGTH_SHORT).show();
             return;
         }
 
         final String[] categories = categoriesSet.toArray(new String[0]);
-        
+
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle("Chọn danh mục");
         builder.setItems(categories, (dialog, which) -> {
@@ -156,11 +172,28 @@ public class ShopFragment extends Fragment {
         String searchText = etSearch.getText().toString().toLowerCase().trim();
         List<ProductItem> filteredList = new ArrayList<>();
 
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                searchHandler.removeCallbacks(searchRunnable);
+                searchHandler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_MS);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        loadProducts(null);
         for (ProductItem item : originalList) {
             boolean matchesSearch = item.getProductName().toLowerCase().contains(searchText);
-            boolean matchesCategory = (selectedCategory == null || 
+            boolean matchesCategory = (selectedCategory == null ||
                                       (item.getCategoryName() != null && item.getCategoryName().equals(selectedCategory)));
-            
+
             if (matchesSearch && matchesCategory) {
                 filteredList.add(item);
             }
@@ -177,12 +210,24 @@ public class ShopFragment extends Fragment {
         }
     }
 
-    private void loadProducts() {
+    private void loadProducts(String searchKeyword) {
+        if (activeCall != null) {
+            activeCall.cancel();
+        }
+
         progressBar.setVisibility(View.VISIBLE);
+        String normalizedSearch = TextUtils.isEmpty(searchKeyword) ? null : searchKeyword.trim();
+
+        // Use skip/take pagination matching backend API
+        activeCall = productAPIService.getProducts(normalizedSearch, null, null, null, null, 0, 20);
+        activeCall.enqueue(new Callback<ProductListResponse>() {
         Call<ProductListResponse> call = productAPIService.getProducts(null, null, null, null, null, 0, 100);
         call.enqueue(new Callback<ProductListResponse>() {
             @Override
             public void onResponse(Call<ProductListResponse> call, Response<ProductListResponse> response) {
+                if (!isAdded() || call.isCanceled()) {
+                    return;
+                }
                 progressBar.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
                     originalList = response.body().getItems();
@@ -197,10 +242,22 @@ public class ShopFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ProductListResponse> call, Throwable t) {
+                if (!isAdded() || call.isCanceled()) {
+                    return;
+                }
                 progressBar.setVisibility(View.GONE);
                 Log.e("SHOP_FRAGMENT", "Error loading data: " + t.getMessage(), t);
                 Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    @Override
+    public void onDestroyView() {
+        searchHandler.removeCallbacks(searchRunnable);
+        if (activeCall != null) {
+            activeCall.cancel();
+        }
+        super.onDestroyView();
     }
 }

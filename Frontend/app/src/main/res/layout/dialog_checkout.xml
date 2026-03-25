@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:background="@color/surface_card"
     android:padding="20dp">
 
     <TextView
@@ -34,6 +35,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Địa chỉ giao hàng"
+        android:textColor="@color/text_primary"
         android:textStyle="bold"
         android:layout_marginBottom="8dp"/>
 
@@ -42,13 +44,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Nhập địa chỉ đầy đủ"
+        android:background="@drawable/search_background"
         android:inputType="textPostalAddress"
+        android:padding="14dp"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_muted"
         android:layout_marginBottom="16dp"/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Phương thức thanh toán"
+        android:textColor="@color/text_primary"
         android:textStyle="bold"
         android:layout_marginBottom="8dp"/>
 

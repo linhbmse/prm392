@@ -1,115 +1,185 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_gradient"
+    android:background="@color/surface"
+    android:fillViewport="true"
     tools:context=".LoginActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center_horizontal">
+        android:orientation="vertical">
 
-        <!-- Header (Reusable) -->
-        <com.myfirstandroidjava.salesapp.components.HeaderView
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:headerTitle="Login" />
+            android:background="@drawable/bg_shop_header"
+            android:minHeight="250dp">
 
-        <!-- Title -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="ShopHub"
-            android:textColor="@android:color/white"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:layout_marginTop="40dp" />
+            <View
+                android:layout_width="132dp"
+                android:layout_height="132dp"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="-20dp"
+                android:layout_marginEnd="-12dp"
+                android:background="@drawable/bg_shop_orb_primary" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Welcome back"
-            android:textColor="@android:color/white"
-            android:layout_marginBottom="24dp" />
+            <View
+                android:layout_width="88dp"
+                android:layout_height="88dp"
+                android:layout_gravity="bottom|start"
+                android:layout_marginStart="-16dp"
+                android:layout_marginBottom="18dp"
+                android:background="@drawable/bg_shop_orb_secondary" />
 
-        <!-- Card Container -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingTop="28dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="24dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_section_tag"
+                    android:paddingStart="12dp"
+                    android:paddingTop="8dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="8dp"
+                    android:text="Secure login"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="26dp"
+                    android:text="Welcome back"
+                    android:textColor="@android:color/white"
+                    android:textSize="31sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:maxLines="2"
+                    android:text="Sign in to continue exploring your curated storefront."
+                    android:textColor="#E6EEF8"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </FrameLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@android:color/white"
-            android:padding="20dp"
-            android:elevation="4dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp"
-            android:clipToOutline="true"
-            android:backgroundTintMode="src_in"
-            android:backgroundTint="@android:color/white"
-            android:layout_marginHorizontal="24dp">
+            android:paddingStart="18dp"
+            android:paddingTop="18dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="24dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Username"
-                android:textStyle="bold"
-                android:textColor="#333" />
-
-            <EditText
-                android:id="@+id/editTextUsername"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="yourusername"
-                android:inputType="text"
-                android:drawableStart="@android:drawable/ic_dialog_email"
-                android:padding="10dp"
-                android:background="@drawable/bg_input"
-                android:layout_marginTop="4dp" />
+                android:background="@drawable/bg_auth_card"
+                android:elevation="5dp"
+                android:orientation="vertical"
+                android:padding="20dp">
 
-            <!-- Password -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Password"
-                android:textStyle="bold"
-                android:textColor="#333"
-                android:layout_marginTop="12dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Account"
+                    android:textColor="@color/text_muted"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
-            <EditText
-                android:id="@+id/editTextPassword"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="••••••"
-                android:inputType="textPassword"
-                android:drawableStart="@android:drawable/ic_lock_idle_lock"
-                android:padding="10dp"
-                android:background="@drawable/bg_input"
-                android:layout_marginTop="4dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Login"
+                    android:textColor="@color/text_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
 
-            <!-- Login Button -->
-            <Button
-                android:id="@+id/buttonLogin"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Login"
-                android:layout_marginTop="16dp"
-                android:backgroundTint="#4A3AFF"
-                android:textColor="@android:color/white" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:text="Username"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold" />
 
-            <!-- Register -->
-            <TextView
-                android:id="@+id/textViewRegister"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Don't have an account? Register"
-                android:textColor="#4A3AFF"
-                android:layout_gravity="center"
-                android:layout_marginTop="16dp"
-                android:clickable="true"
-                android:focusable="true" />
+                <EditText
+                    android:id="@+id/editTextUsername"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_shop_search_surface"
+                    android:drawableStart="@android:drawable/ic_dialog_email"
+                    android:drawablePadding="10dp"
+                    android:hint="yourusername"
+                    android:inputType="text"
+                    android:padding="14dp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_muted" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Password"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/editTextPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_shop_search_surface"
+                    android:drawableStart="@android:drawable/ic_lock_idle_lock"
+                    android:drawablePadding="10dp"
+                    android:hint="Enter your password"
+                    android:inputType="textPassword"
+                    android:padding="14dp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_muted" />
+
+                <Button
+                    android:id="@+id/buttonLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/bg_primary_button"
+                    android:minHeight="0dp"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                    android:text="Login"
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white" />
+
+                <TextView
+                    android:id="@+id/textViewRegister"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="18dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:text="Don't have an account? Register"
+                    android:textColor="@color/brand_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

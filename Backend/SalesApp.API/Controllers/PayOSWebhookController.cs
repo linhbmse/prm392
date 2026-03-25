@@ -47,5 +47,15 @@ namespace SalesApp.API.Controllers
                 return Problem(ex.Message);
             }
         }
+
+        [HttpGet("mobile-redirect")]
+        public IActionResult MobileRedirect()
+        {
+            // Perform a server-side 302 redirect to the custom scheme
+            // This bypasses Chrome's block on client-side JS redirects
+            var queryString = Request.QueryString.Value;
+            var redirectUrl = "myapp://payos-return" + (queryString ?? "");
+            return Redirect(redirectUrl);
+        }
     }
 }
