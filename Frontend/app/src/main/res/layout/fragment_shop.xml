@@ -182,7 +182,7 @@
         </LinearLayout>
     </FrameLayout>
 
-    <LinearLayout
+    <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Tìm kiếm sản phẩm..."
@@ -238,6 +238,9 @@
             </com.google.android.material.chip.ChipGroup>
         </LinearLayout>
     </HorizontalScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="10dp"
         android:layout_weight="1"
@@ -311,11 +314,4 @@
             android:paddingEnd="2dp"
             android:paddingBottom="24dp" />
     </LinearLayout>
-    <!-- Product List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewProducts"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="8dp"
-        android:clipToPadding="false" />
 </LinearLayout>
