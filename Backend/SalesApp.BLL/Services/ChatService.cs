@@ -37,6 +37,53 @@ namespace SalesApp.BLL.Services
             return principal.FindFirst(ClaimTypes.Role)?.Value ?? "User";
         }
 
+        public async Task<IEnumerable<ChatConversationDto>> GetConversationsAsync(ClaimsPrincipal userPrincipal, CancellationToken cancellationToken = default)
+        {
+            var userId = GetUserId(userPrincipal);
+            var role = GetUserRole(userPrincipal);
+
+            if (role != "Admin")
+            {
+                throw new UnauthorizedAccessException("Chỉ Admin mới có thể gọi API này.");
+            }
+
+            var conversationsQuery = _context.ChatMessages
+                .Where(m => m.UserId == userId || m.ReceiverUserId == userId)
+                .GroupBy(m => m.UserId == userId ? m.ReceiverUserId : m.UserId)
+                .Select(g => new
+                {
+                    OtherUserId = g.Key,
+                    LastMessage = g.OrderByDescending(m => m.SentAt).Select(m => m.Message).FirstOrDefault(),
+                    LastMessageAt = g.OrderByDescending(m => m.SentAt).Select(m => m.SentAt).FirstOrDefault()
+                });
+
+            var conversations = await conversationsQuery
+                .Where(x => x.OtherUserId.HasValue)
+                .Select(x => new ChatConversationDto
+                {
+                    UserId = x.OtherUserId!.Value,
+                    LastMessage = x.LastMessage,
+                    LastMessageAt = x.LastMessageAt
+                })
+                .ToListAsync(cancellationToken);
+
+            var otherUserIds = conversations.Select(c => c.UserId).Distinct().ToList();
+            var usersInfo = await _context.Users
+                .Where(u => otherUserIds.Contains(u.UserId))
+                .ToDictionaryAsync(u => u.UserId, u => new { u.Username, u.Role }, cancellationToken);
+
+            foreach (var c in conversations)
+            {
+                if (usersInfo.TryGetValue(c.UserId, out var uInfo))
+                {
+                    c.Username = uInfo.Username;
+                    c.UserRole = uInfo.Role;
+                }
+            }
+
+            return conversations.OrderByDescending(c => c.LastMessageAt);
+        }
+
         public async Task<ChatHistoryResponseDto> GetMessagesAsync(ClaimsPrincipal userPrincipal, int? otherUserId, int skip = 0, int take = 50, CancellationToken cancellationToken = default)
         {
             var userId = GetUserId(userPrincipal);

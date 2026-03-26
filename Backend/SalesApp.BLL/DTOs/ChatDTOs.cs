@@ -15,6 +15,15 @@ namespace SalesApp.BLL.DTOs
         public DateTime? SentAt { get; set; }
     }
 
+    public class ChatConversationDto
+    {
+        public int UserId { get; set; }
+        public string? Username { get; set; }
+        public string? UserRole { get; set; }
+        public string? LastMessage { get; set; }
+        public DateTime? LastMessageAt { get; set; }
+    }
+
     public class ChatHistoryResponseDto
     {
         public int Total { get; set; }
