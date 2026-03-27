@@ -54,6 +54,7 @@ public class ShopFragment extends Fragment {
     private List<ProductItem> originalList = new ArrayList<>();
     private boolean isAscending = true;
     private String selectedCategory = null;
+    private Call<ProductListResponse> activeCall;
 
     @Nullable
     @Override
@@ -63,10 +64,10 @@ public class ShopFragment extends Fragment {
         String token = tokenManager.getToken();
         productAPIService = RetrofitClient.getClientPublic(requireContext()).create(ProductAPIService.class);
 
-        recyclerView = view.findViewById(R.id.recyclerViewProducts);
-        progressBar = view.findViewById(R.id.progressBar);
+        recyclerView = view.findViewById(R.id.recyclerViewProductsMain);
+        progressBar = view.findViewById(R.id.progressBarMain);
         btnLoginRegister = view.findViewById(R.id.btnLoginRegister);
-        etSearch = view.findViewById(R.id.etSearch);
+        etSearch = view.findViewById(R.id.etSearchMain);
         chipSortPrice = view.findViewById(R.id.chipSortPrice);
         chipFilterCategory = view.findViewById(R.id.chipFilterCategory);
         chipReset = view.findViewById(R.id.chipReset);
@@ -179,14 +180,14 @@ public class ShopFragment extends Fragment {
         }
     }
 
-    private void loadProducts(String searchKeyword) {
+    private void loadProducts() {
         if (activeCall != null) {
             activeCall.cancel();
         }
 
         progressBar.setVisibility(View.VISIBLE);
-        Call<ProductListResponse> call = productAPIService.getProducts(null, null, null, null, null, 0, 100);
-        call.enqueue(new Callback<ProductListResponse>() {
+        activeCall = productAPIService.getProducts(null, null, null, null, null, 0, 100);
+        activeCall.enqueue(new Callback<ProductListResponse>() {
             @Override
             public void onResponse(Call<ProductListResponse> call, Response<ProductListResponse> response) {
                 if (!isAdded() || call.isCanceled()) {
@@ -218,7 +219,6 @@ public class ShopFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        searchHandler.removeCallbacks(searchRunnable);
         if (activeCall != null) {
             activeCall.cancel();
         }

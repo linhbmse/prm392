@@ -260,7 +260,7 @@
 
     <!-- Search Bar -->
     <EditText
-        android:id="@+id/etSearch"
+        android:id="@+id/etSearchMain"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Tìm kiếm sản phẩm..."
@@ -318,7 +318,7 @@
     </HorizontalScrollView>
 
     <ProgressBar
-        android:id="@+id/progressBar"
+        android:id="@+id/progressBarMain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -326,7 +326,7 @@
 
     <!-- Product List -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewProducts"
+        android:id="@+id/recyclerViewProductsMain"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="8dp"

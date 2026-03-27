@@ -34,7 +34,35 @@ public class TokenManager {
     }
 
     public String getRole() {
-        return sharedPreferences.getString(KEY_ROLE, null);
+        String cachedRole = sharedPreferences.getString(KEY_ROLE, null);
+        if (cachedRole != null) {
+            return cachedRole;
+        }
+
+        String token = getToken();
+        if (token == null) {
+            return null;
+        }
+
+        try {
+            String[] split = token.split("\\.");
+            if (split.length < 2) {
+                return null;
+            }
+
+            String body = getJson(split[1]);
+            JSONObject jsonObject = new JSONObject(body);
+            String roleClaim = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+            if (jsonObject.has(roleClaim)) {
+                String role = jsonObject.getString(roleClaim);
+                saveRole(role); // cache for future lookups
+                return role;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     public String getUsername() {

@@ -83,6 +83,10 @@
             android:name=".OrderSuccessActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ChatDetailActivity"
+            android:exported="false" />
+
         <service
             android:name=".services.MyFirebaseMessagingService"
             android:exported="false">
