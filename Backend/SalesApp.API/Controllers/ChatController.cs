@@ -20,6 +20,18 @@ namespace SalesApp.API.Controllers
         }
 
         /// <summary>
+        /// Get all chat conversations (Admin only).
+        /// Returns a list of users the admin has chatted with.
+        /// </summary>
+        [HttpGet("conversations")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetConversations(CancellationToken cancellationToken = default)
+        {
+            var result = await _chatService.GetConversationsAsync(User, cancellationToken);
+            return Ok(result);
+        }
+
+        /// <summary>
         /// Get chat message history. 
         /// Pass otherUserId to filter conversation with a specific user.
         /// </summary>
