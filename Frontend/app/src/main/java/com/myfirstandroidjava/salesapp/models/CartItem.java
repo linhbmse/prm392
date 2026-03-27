@@ -10,6 +10,7 @@ public class CartItem implements Serializable {
     private double price;
     private int quantity;
     private double totalPrice;
+    private String categoryName;
 
     public CartItem() {}
 
@@ -43,4 +44,19 @@ public class CartItem implements Serializable {
 
     public double getTotalPrice() { return totalPrice; }
     public void setTotalPrice(double totalPrice) { this.totalPrice = totalPrice; }
+
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+
+    public int getMaxQuantity() {
+        if (categoryName == null) return 2; // Default
+        String lowerCategory = categoryName.toLowerCase();
+        if (lowerCategory.contains("điện thoại") || lowerCategory.contains("phone")) {
+            return 1;
+        } else if (lowerCategory.contains("tai nghe") || lowerCategory.contains("headphone")) {
+            return 3;
+        } else {
+            return 2;
+        }
+    }
 }

@@ -51,6 +51,8 @@ namespace SalesApp.BLL.DTOs
 
         [Required]
         public string PaymentMethod { get; set; } // "PAYOS" or "COD"
+
+        public List<int>? CartItemIds { get; set; }
     }
 
     public class CreateOrderResponseDto

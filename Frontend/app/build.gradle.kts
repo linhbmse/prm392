@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
-    // id("com.google.gms.google-services")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -61,7 +61,6 @@ dependencies {
 
     // Bumptech
     implementation("com.github.bumptech.glide:glide:4.16.0")
-    // implementation(libs.firebase.messaging)
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
     // Testing
@@ -70,9 +69,9 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 
     // Firebase
-    // implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
-    // implementation("com.google.firebase:firebase-analytics")
-    // implementation("com.google.firebase:firebase-messaging")
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-messaging")
 
     // SignalR
     implementation("com.microsoft.signalr:signalr:8.0.0")

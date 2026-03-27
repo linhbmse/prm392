@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -25,6 +27,7 @@ import retrofit2.Response;
 public class OrderActivity extends AppCompatActivity {
 
     private TextView tvOrderId, tvOrderStatus, tvOrderDate, tvPaymentMethod, tvBillingAddress, tvTotalPrice;
+    private LinearLayout llCartItems;
     private Button btnPayNow;
     private PaymentAPIService paymentAPIService;
     private int orderId;
@@ -44,6 +47,7 @@ public class OrderActivity extends AppCompatActivity {
         tvPaymentMethod = findViewById(R.id.tvPaymentMethod);
         tvBillingAddress = findViewById(R.id.tvBillingAddress);
         tvTotalPrice = findViewById(R.id.tvTotalPrice);
+        llCartItems = findViewById(R.id.llCartItems);
         btnPayNow = findViewById(R.id.btnPayNow);
 
         OrderResponse order = (OrderResponse) getIntent().getSerializableExtra("orderResponse");
@@ -51,18 +55,12 @@ public class OrderActivity extends AppCompatActivity {
             orderId = order.getOrderId();
             displayOrder(order);
 
-            // Logic for Pay Button based on Payment Method
             if ("PAYOS".equalsIgnoreCase(order.getPaymentMethod())) {
                 btnPayNow.setText("Pay Now with PayOS");
-                btnPayNow.setEnabled(true);
                 btnPayNow.setOnClickListener(v -> startPayOSCheckout(orderId));
             } else {
-                // For COD, the order is already placed. Let the user go home.
                 btnPayNow.setText("Back to Home");
-                btnPayNow.setEnabled(true);
-                btnPayNow.setClickable(true);
                 btnPayNow.setOnClickListener(v -> {
-                    Toast.makeText(this, "Returning to Home", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(OrderActivity.this, HomeActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
@@ -76,12 +74,27 @@ public class OrderActivity extends AppCompatActivity {
     }
 
     private void displayOrder(OrderResponse order) {
-        tvOrderId.setText("Order ID: " + order.getOrderId());
+        tvOrderId.setText("Order ID: #" + order.getOrderId());
         tvOrderStatus.setText("Status: " + order.getOrderStatus());
         tvOrderDate.setText("Date: " + order.getOrderDate());
         tvPaymentMethod.setText("Payment: " + order.getPaymentMethod());
         tvBillingAddress.setText("Address: " + order.getBillingAddress());
         tvTotalPrice.setText(String.format("Total: $%.2f", order.getTotalAmount()));
+
+        llCartItems.removeAllViews();
+        if (order.getOrderItems() != null) {
+            for (OrderResponse.OrderItemResponse item : order.getOrderItems()) {
+                View itemView = LayoutInflater.from(this).inflate(android.R.layout.simple_list_item_2, llCartItems, false);
+                TextView text1 = itemView.findViewById(android.R.id.text1);
+                TextView text2 = itemView.findViewById(android.R.id.text2);
+                
+                text1.setText(item.getProductName());
+                text2.setText(String.format("Qty: %d x $%.2f = $%.2f", 
+                    item.getQuantity(), item.getUnitPrice(), (item.getQuantity() * item.getUnitPrice())));
+                
+                llCartItems.addView(itemView);
+            }
+        }
     }
 
     private void startPayOSCheckout(int orderId) {
@@ -99,13 +112,10 @@ public class OrderActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     CheckoutResponse checkout = response.body();
                     if (checkout.isSuccess() && checkout.getCheckoutUrl() != null) {
-                        // Open PayOS checkout URL in in-app WebView
-                        Intent intent = new Intent(OrderActivity.this, PayOSWebViewActivity.class);
-                        intent.putExtra("checkoutUrl", checkout.getCheckoutUrl());
-                        startActivity(intent);
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(checkout.getCheckoutUrl()));
+                        startActivity(browserIntent);
                     } else {
-                        String msg = checkout.getMessage() != null ? checkout.getMessage() : "Checkout failed";
-                        Toast.makeText(OrderActivity.this, msg, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(OrderActivity.this, checkout.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     Toast.makeText(OrderActivity.this, "Failed to create checkout", Toast.LENGTH_SHORT).show();
@@ -116,7 +126,6 @@ public class OrderActivity extends AppCompatActivity {
             public void onFailure(Call<CheckoutResponse> call, Throwable t) {
                 btnPayNow.setEnabled(true);
                 btnPayNow.setText("Pay Now with PayOS");
-                Log.e("PayOS", "Error: " + t.getMessage());
                 Toast.makeText(OrderActivity.this, "Payment error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });

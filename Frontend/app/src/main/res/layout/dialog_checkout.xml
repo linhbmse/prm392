@@ -7,10 +7,34 @@
     android:padding="20dp">
 
     <TextView
+        android:id="@+id/tvOrderSummary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Delivery Address"
-        android:textColor="@color/text_primary"
+        android:text="Tóm tắt đơn hàng"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/tvTotalAmount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Số tiền: $0.00"
+        android:textColor="@color/purple_700"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#DDDDDD"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Địa chỉ giao hàng"
         android:textStyle="bold"
         android:layout_marginBottom="8dp"/>
 
@@ -18,8 +42,7 @@
         android:id="@+id/etAddress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/search_background"
-        android:hint="Enter your full address"
+        android:hint="Nhập địa chỉ đầy đủ"
         android:inputType="textPostalAddress"
         android:padding="14dp"
         android:textColor="@color/text_primary"
@@ -29,8 +52,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Payment Method"
-        android:textColor="@color/text_primary"
+        android:text="Phương thức thanh toán"
         android:textStyle="bold"
         android:layout_marginBottom="8dp"/>
 
@@ -43,14 +65,14 @@
             android:id="@+id/rbCOD"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Cash on Delivery (COD)"
+            android:text="Thanh toán khi nhận hàng (COD)"
             android:checked="true"/>
 
         <RadioButton
             android:id="@+id/rbPayOS"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Pay with PayOS (Bank Transfer/QR)"/>
+            android:text="Thanh toán qua PayOS (QR Code)"/>
 
     </RadioGroup>
 

@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.myfirstandroidjava.salesapp.models.AddToCartRequest;
+import com.myfirstandroidjava.salesapp.models.CartItem;
 import com.myfirstandroidjava.salesapp.models.CartListResponse;
 import com.myfirstandroidjava.salesapp.models.ProductDetailResponse;
 import com.myfirstandroidjava.salesapp.network.CartAPIService;
@@ -22,6 +23,8 @@ import com.myfirstandroidjava.salesapp.network.ProductAPIService;
 import com.myfirstandroidjava.salesapp.network.RetrofitClient;
 import com.myfirstandroidjava.salesapp.utils.Constants;
 import com.myfirstandroidjava.salesapp.utils.TokenManager;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -36,6 +39,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private CartAPIService cartAPIService;
     private TokenManager tokenManager;
     private int productId;
+    private String categoryName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +77,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             });
         } else {
             btnAddToCart.setText("Add to Cart");
-            btnAddToCart.setOnClickListener(v -> addToCart(productId));
+            btnAddToCart.setOnClickListener(v -> checkAndAddToCart());
         }
     }
 
@@ -86,6 +90,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
                     ProductDetailResponse product = response.body();
+                    categoryName = product.getCategoryName();
                     textName.setText(product.getProductName());
                     textDescription.setText(product.getFullDescription());
                     textPrice.setText("$" + product.getPrice());
@@ -93,7 +98,6 @@ public class ProductDetailActivity extends AppCompatActivity {
 
                     if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
                         String imageUrl = product.getImageUrl();
-                        // If the URL is relative, prepend base URL
                         if (!imageUrl.startsWith("http")) {
                             imageUrl = Constants.BASE_URL + imageUrl;
                         }
@@ -118,10 +122,55 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
     }
 
-    private void addToCart(int productId) {
+    private void checkAndAddToCart() {
         progressBar.setVisibility(View.VISIBLE);
         btnAddToCart.setEnabled(false);
 
+        // First, get current cart to check quantity
+        cartAPIService.getCart().enqueue(new Callback<CartListResponse>() {
+            @Override
+            public void onResponse(Call<CartListResponse> call, Response<CartListResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<CartItem> items = response.body().getItems();
+                    int currentQuantity = 0;
+                    for (CartItem item : items) {
+                        if (item.getProductId() == productId) {
+                            currentQuantity = item.getQuantity();
+                            break;
+                        }
+                    }
+
+                    int maxAllowed = getMaxQuantityForCategory(categoryName);
+                    if (currentQuantity >= maxAllowed) {
+                        progressBar.setVisibility(View.GONE);
+                        btnAddToCart.setEnabled(true);
+                        Toast.makeText(ProductDetailActivity.this, 
+                            "Bạn đã đạt giới hạn tối đa (" + maxAllowed + ") cho loại sản phẩm này trong giỏ hàng.", 
+                            Toast.LENGTH_LONG).show();
+                    } else {
+                        addToCart(productId);
+                    }
+                } else {
+                    addToCart(productId); // Try adding anyway if can't fetch cart
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CartListResponse> call, Throwable t) {
+                addToCart(productId);
+            }
+        });
+    }
+
+    private int getMaxQuantityForCategory(String category) {
+        if (category == null) return 2;
+        String lower = category.toLowerCase();
+        if (lower.contains("điện thoại") || lower.contains("phone")) return 2;
+        if (lower.contains("tai nghe") || lower.contains("headphone")) return 3;
+        return 2;
+    }
+
+    private void addToCart(int productId) {
         AddToCartRequest request = new AddToCartRequest(productId, 1);
         cartAPIService.addToCart(request).enqueue(new Callback<CartListResponse>() {
             @Override
@@ -130,10 +179,16 @@ public class ProductDetailActivity extends AppCompatActivity {
                 btnAddToCart.setEnabled(true);
 
                 if (response.isSuccessful() && response.body() != null) {
-                    Toast.makeText(ProductDetailActivity.this, "Added to cart successfully!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProductDetailActivity.this, "Đã thêm vào giỏ hàng thành công!", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(ProductDetailActivity.this, "Failed to add to cart", Toast.LENGTH_SHORT).show();
-                    Log.e("CART_ERROR", "Response code: " + response.code());
+                    String errorMsg = "Không thể thêm vào giỏ hàng";
+                    try {
+                        if (response.errorBody() != null) {
+                            // Check if backend returned a specific error message about limit
+                            errorMsg = response.errorBody().string();
+                        }
+                    } catch (Exception e) {}
+                    Toast.makeText(ProductDetailActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -141,8 +196,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             public void onFailure(Call<CartListResponse> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 btnAddToCart.setEnabled(true);
-                Log.e("CART_ERROR", "Error: " + t.getMessage());
-                Toast.makeText(ProductDetailActivity.this, "Error adding to cart", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ProductDetailActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }
         });
     }

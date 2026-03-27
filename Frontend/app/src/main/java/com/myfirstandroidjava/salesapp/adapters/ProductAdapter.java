@@ -64,6 +64,11 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         return products.size();
     }
 
+    public void updateList(List<ProductItem> newList) {
+        this.products = newList;
+        notifyDataSetChanged();
+    }
+
     static class ProductViewHolder extends RecyclerView.ViewHolder {
         TextView textName, textPrice;
         ImageView imageProduct;
